@@ -10,11 +10,9 @@ package com.akaleaf.course;
  * @author akaleaf
  */
 
-import java.awt.*;
-import java.awt.event.*;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import javax.swing.border.*;
 import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.text.AbstractDocument;
@@ -639,6 +637,8 @@ public class TestingCenterGUI extends javax.swing.JFrame {
     private void loadFromFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadFromFileButtonActionPerformed
 
         JFileChooser fc = new JFileChooser();
+        fc.addChoosableFileFilter(new CourseFilter());
+        fc.setAcceptAllFileFilterUsed(false);
         fc.showDialog(loadFromFileButton, "Load");
         String path = fc.getSelectedFile().toString();
         
@@ -884,3 +884,17 @@ class IntegerDocumentFilter extends DocumentFilter {
     }   
 
 }
+
+class CourseFilter extends javax.swing.filechooser.FileFilter {
+        @Override
+        public boolean accept(File file) {
+            // Allow only directories, or files with ".txt" extension
+            return file.isDirectory() || file.getAbsolutePath().endsWith(".course");
+        }
+        @Override
+        public String getDescription() {
+            // This description will be displayed in the dialog,
+            // hard-coded = ugly, should be done via I18N
+            return "Course documents (*.course)";
+        }
+    } 
