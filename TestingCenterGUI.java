@@ -10,12 +10,13 @@ package com.akaleaf.course;
  * @author akaleaf
  */
 
+import java.awt.Color;
+import java.awt.TextField;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import javax.swing.*;
 import javax.swing.table.*;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
@@ -30,11 +31,12 @@ public class TestingCenterGUI extends javax.swing.JFrame {
     public TestingCenterGUI() {
         initComponents();
         setLocationRelativeTo(null);
-        ((AbstractDocument) testResultTextField.getDocument()).setDocumentFilter(new StringDocumentFilter());
-        ((AbstractDocument) newTestResultTextField.getDocument()).setDocumentFilter(new StringDocumentFilter());
-        ((AbstractDocument) userNameTextField.getDocument()).setDocumentFilter(new IntegerDocumentFilter());
-        ((AbstractDocument) testNameTextField.getDocument()).setDocumentFilter(new IntegerDocumentFilter());
-        ((AbstractDocument) newTestNameTextField.getDocument()).setDocumentFilter(new IntegerDocumentFilter());
+        
+//        ((AbstractDocument) testResultTextField.getDocument()).setDocumentFilter(new StringDocumentFilter());
+//        ((AbstractDocument) newTestResultTextField.getDocument()).setDocumentFilter(new StringDocumentFilter());
+//        ((AbstractDocument) userNameTextField.getDocument()).setDocumentFilter(new IntegerDocumentFilter());
+//        ((AbstractDocument) testNameTextField.getDocument()).setDocumentFilter(new IntegerDocumentFilter());
+//        ((AbstractDocument) newTestNameTextField.getDocument()).setDocumentFilter(new IntegerDocumentFilter());
     }
 
     /**
@@ -56,7 +58,6 @@ public class TestingCenterGUI extends javax.swing.JFrame {
         removeUserButton = new javax.swing.JButton();
         userNameTextField = new javax.swing.JTextField();
         userNameLabel = new javax.swing.JLabel();
-        jSeparator2 = new javax.swing.JSeparator();
         saveTablesToFileButton = new javax.swing.JButton();
         loadFromFileButton = new javax.swing.JButton();
         saveLogsToFileButton = new javax.swing.JButton();
@@ -70,15 +71,10 @@ public class TestingCenterGUI extends javax.swing.JFrame {
         newTestNameLabel = new javax.swing.JLabel();
         testNameTextField = new javax.swing.JTextField();
         removeTestButton = new javax.swing.JButton();
-        changeTestResultPanel = new javax.swing.JPanel();
-        changeTestResultButton = new javax.swing.JButton();
-        newResultLabel = new javax.swing.JLabel();
-        newTestResultTextField = new javax.swing.JTextField();
         changeTestNamePanel = new javax.swing.JPanel();
         newNameLabel = new javax.swing.JLabel();
         newTestNameTextField = new javax.swing.JTextField();
         changeTestNameButton = new javax.swing.JButton();
-        removeAllTestsCheckBox = new javax.swing.JCheckBox();
         selectedUserLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -93,21 +89,37 @@ public class TestingCenterGUI extends javax.swing.JFrame {
                 "Test name", "Result"
             }
         ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Integer.class
+            };
             boolean[] canEdit = new boolean [] {
                 false, false
             };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
+        testsTable.setColumnSelectionAllowed(true);
         testsTable.getTableHeader().setReorderingAllowed(false);
         testsTable.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 testsTableMouseClicked(evt);
             }
         });
+        testsTable.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                testsTableInputMethodTextChanged(evt);
+            }
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
+        });
         jScrollPane1.setViewportView(testsTable);
+        testsTable.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         if (testsTable.getColumnModel().getColumnCount() > 0) {
             testsTable.getColumnModel().getColumn(1).setPreferredWidth(20);
         }
@@ -148,18 +160,19 @@ public class TestingCenterGUI extends javax.swing.JFrame {
             tablePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(tablePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(tablePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addGroup(tablePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 353, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 353, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         tablePanelLayout.setVerticalGroup(
             tablePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, tablePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 197, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         menuPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Menu"));
@@ -179,6 +192,14 @@ public class TestingCenterGUI extends javax.swing.JFrame {
             }
         });
 
+        userNameTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                userNameTextFieldFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                userNameTextFieldFocusLost(evt);
+            }
+        });
         userNameTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 userNameTextFieldActionPerformed(evt);
@@ -221,22 +242,21 @@ public class TestingCenterGUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(menuPanelLayout.createSequentialGroup()
+                        .addComponent(addUserButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(removeUserButton, javax.swing.GroupLayout.PREFERRED_SIZE, 97, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(loadFromFileButton)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(menuPanelLayout.createSequentialGroup()
                         .addComponent(userNameLabel)
                         .addGap(1, 1, 1)
-                        .addComponent(userNameTextField))
-                    .addGroup(menuPanelLayout.createSequentialGroup()
-                        .addComponent(addUserButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(removeUserButton, javax.swing.GroupLayout.PREFERRED_SIZE, 97, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
-                .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, menuPanelLayout.createSequentialGroup()
-                        .addComponent(saveTablesToFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(loadFromFileButton))
-                    .addComponent(saveLogsToFileButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(userNameTextField)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(saveLogsToFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(saveTablesToFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(12, 12, 12))
         );
 
         menuPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addUserButton, loadFromFileButton, removeUserButton, saveTablesToFileButton});
@@ -245,21 +265,17 @@ public class TestingCenterGUI extends javax.swing.JFrame {
             menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(menuPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSeparator2)
-                    .addGroup(menuPanelLayout.createSequentialGroup()
-                        .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(saveLogsToFileButton)
-                            .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(userNameLabel)
-                                .addComponent(userNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(removeUserButton)
-                            .addComponent(addUserButton)
-                            .addComponent(saveTablesToFileButton)
-                            .addComponent(loadFromFileButton))
-                        .addContainerGap())))
+                .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(userNameLabel)
+                    .addComponent(userNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(saveLogsToFileButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(menuPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(removeUserButton)
+                    .addComponent(addUserButton)
+                    .addComponent(saveTablesToFileButton)
+                    .addComponent(loadFromFileButton))
+                .addContainerGap())
         );
 
         logs.setEditable(false);
@@ -270,7 +286,7 @@ public class TestingCenterGUI extends javax.swing.JFrame {
 
         addTestPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Add test"));
 
-        addTestButton.setText("Add test");
+        addTestButton.setText("Set test result");
         addTestButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addTestButtonActionPerformed(evt);
@@ -279,6 +295,22 @@ public class TestingCenterGUI extends javax.swing.JFrame {
 
         testResultLabel.setText("Test result:");
 
+        testResultTextField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.shadow"));
+        testResultTextField.setText("0-100");
+        testResultTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                testResultTextFieldFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                testResultTextFieldFocusLost(evt);
+            }
+        });
+        testResultTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                testResultTextFieldKeyPressed(evt);
+            }
+        });
+
         javax.swing.GroupLayout addTestPanelLayout = new javax.swing.GroupLayout(addTestPanel);
         addTestPanel.setLayout(addTestPanelLayout);
         addTestPanelLayout.setHorizontalGroup(
@@ -286,12 +318,14 @@ public class TestingCenterGUI extends javax.swing.JFrame {
             .addGroup(addTestPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(addTestPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(testResultTextField)
                     .addGroup(addTestPanelLayout.createSequentialGroup()
                         .addComponent(testResultLabel)
-                        .addGap(0, 60, Short.MAX_VALUE))
-                    .addComponent(addTestButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, addTestPanelLayout.createSequentialGroup()
+                        .addGroup(addTestPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(addTestButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 118, Short.MAX_VALUE)
+                            .addComponent(testResultTextField))
+                        .addContainerGap())))
         );
         addTestPanelLayout.setVerticalGroup(
             addTestPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -302,68 +336,61 @@ public class TestingCenterGUI extends javax.swing.JFrame {
                 .addComponent(testResultTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(addTestButton)
-                .addContainerGap(14, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         newTestNameLabel.setText("Test name:");
 
+        testNameTextField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.shadow"));
+        testNameTextField.setText("Only letters. Example: RU, Serious Test...");
+        testNameTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                testNameTextFieldFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                testNameTextFieldFocusLost(evt);
+            }
+        });
         testNameTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 testNameTextFieldActionPerformed(evt);
             }
         });
+        testNameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                testNameTextFieldKeyPressed(evt);
+            }
+        });
 
-        removeTestButton.setText("Remove test");
+        removeTestButton.setText("Remove first test");
         removeTestButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeTestButtonActionPerformed(evt);
             }
         });
 
-        changeTestResultPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Change test result"));
-
-        changeTestResultButton.setText("Change test result");
-        changeTestResultButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                changeTestResultButtonActionPerformed(evt);
-            }
-        });
-
-        newResultLabel.setText("New result:");
-
-        javax.swing.GroupLayout changeTestResultPanelLayout = new javax.swing.GroupLayout(changeTestResultPanel);
-        changeTestResultPanel.setLayout(changeTestResultPanelLayout);
-        changeTestResultPanelLayout.setHorizontalGroup(
-            changeTestResultPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, changeTestResultPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(changeTestResultPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(changeTestResultButton, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
-                    .addComponent(newTestResultTextField, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, changeTestResultPanelLayout.createSequentialGroup()
-                        .addComponent(newResultLabel)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        changeTestResultPanelLayout.setVerticalGroup(
-            changeTestResultPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, changeTestResultPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(newResultLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(newTestResultTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(changeTestResultButton)
-                .addGap(17, 17, 17))
-        );
-
         changeTestNamePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Change test name"));
 
-        newNameLabel.setText("New name:");
+        newNameLabel.setText("New test name:");
 
+        newTestNameTextField.setForeground(javax.swing.UIManager.getDefaults().getColor("TextField.shadow"));
+        newTestNameTextField.setText("Only letters. Example: EN, Not So Serious Test...");
+        newTestNameTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                newTestNameTextFieldFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                newTestNameTextFieldFocusLost(evt);
+            }
+        });
         newTestNameTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newTestNameTextFieldActionPerformed(evt);
+            }
+        });
+        newTestNameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                newTestNameTextFieldKeyPressed(evt);
             }
         });
 
@@ -383,10 +410,10 @@ public class TestingCenterGUI extends javax.swing.JFrame {
                 .addGroup(changeTestNamePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(changeTestNamePanelLayout.createSequentialGroup()
                         .addComponent(newNameLabel)
-                        .addGap(0, 94, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, changeTestNamePanelLayout.createSequentialGroup()
                         .addGroup(changeTestNamePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(changeTestNameButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
+                            .addComponent(changeTestNameButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(newTestNameTextField))
                         .addContainerGap())))
         );
@@ -399,11 +426,10 @@ public class TestingCenterGUI extends javax.swing.JFrame {
                 .addComponent(newTestNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(changeTestNameButton)
-                .addGap(17, 17, 17))
+                .addContainerGap())
         );
 
-        removeAllTestsCheckBox.setText("Remove for all");
-
+        selectedUserLabel.setFont(new java.awt.Font("Ubuntu", 1, 15)); // NOI18N
         selectedUserLabel.setText("<User is not selected>");
 
         javax.swing.GroupLayout testPanelLayout = new javax.swing.GroupLayout(testPanel);
@@ -412,52 +438,37 @@ public class TestingCenterGUI extends javax.swing.JFrame {
             testPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(testPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(testPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(testPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(testPanelLayout.createSequentialGroup()
                         .addGroup(testPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(selectedUserLabel)
                             .addGroup(testPanelLayout.createSequentialGroup()
                                 .addComponent(newTestNameLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(testNameTextField))
-                            .addGroup(testPanelLayout.createSequentialGroup()
-                                .addComponent(selectedUserLabel)
-                                .addGap(0, 0, Short.MAX_VALUE)))
+                                .addComponent(testNameTextField)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeTestButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeAllTestsCheckBox)
-                        .addContainerGap())
+                        .addComponent(removeTestButton))
                     .addGroup(testPanelLayout.createSequentialGroup()
                         .addComponent(addTestPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(changeTestResultPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(changeTestNamePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addComponent(changeTestNamePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
         );
-
-        testPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {changeTestNamePanel, changeTestResultPanel});
-
         testPanelLayout.setVerticalGroup(
             testPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(testPanelLayout.createSequentialGroup()
-                .addGroup(testPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(testPanelLayout.createSequentialGroup()
-                        .addComponent(selectedUserLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(testPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(newTestNameLabel)
-                            .addGroup(testPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(testNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(removeTestButton))))
-                    .addComponent(removeAllTestsCheckBox, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addComponent(selectedUserLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(testPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(testNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(removeTestButton)
+                    .addComponent(newTestNameLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(testPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(testPanelLayout.createSequentialGroup()
-                        .addGroup(testPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(addTestPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(changeTestResultPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 138, Short.MAX_VALUE))
+                        .addComponent(addTestPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(changeTestNamePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 138, Short.MAX_VALUE))
+                    .addComponent(changeTestNamePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -467,12 +478,11 @@ public class TestingCenterGUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(testPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(menuPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(menuPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(testPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.LEADING))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tablePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -480,16 +490,15 @@ public class TestingCenterGUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(tablePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(menuPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(testPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addComponent(testPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -508,6 +517,13 @@ public class TestingCenterGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_removeUserButtonActionPerformed
 
     private void addUserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addUserButtonActionPerformed
+        
+        if (!isOnlyAlphabetic(userNameTextField.getText())) {
+        
+            JOptionPane.showMessageDialog(null, "Only letters are allowed");
+            return;
+            
+        }
         
         User newUser = new User(userNameTextField.getText(), 8);
         
@@ -560,7 +576,6 @@ public class TestingCenterGUI extends javax.swing.JFrame {
             usersTableModel.setValueAt(user.getTestsTop() + 1, i, 1);
             usersTableModel.setValueAt(user.getAverageResult(), i, 2);
             
-            
         }
     
     }
@@ -571,15 +586,6 @@ public class TestingCenterGUI extends javax.swing.JFrame {
 
     private void addTestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addTestButtonActionPerformed
         
-        int testResult = Integer.valueOf(testResultTextField.getText());
-        
-        if (testResult < 0 || testResult > 100) {
-
-            logs.append("Add test: Test is not added: Out of range: " + testResult + "\n");
-            return;
-
-        }
-
         if (selectedUserLabel.getText().equals("<User is not selected>")) {
 
             logs.append("Add test: Test is not added: User is not selected\n");
@@ -587,35 +593,54 @@ public class TestingCenterGUI extends javax.swing.JFrame {
 
         }
         
+        if (!isOnlyAlphabetic(testNameTextField.getText())) {
+        
+            JOptionPane.showMessageDialog(null, "Only letters are allowed in test name");
+            return;
+            
+        }
+        
+        if (!isOnlyNumeric(testResultTextField.getText())) {
+        
+            JOptionPane.showMessageDialog(null, "Only numbers are allowed in test result");
+            return;
+            
+        }
+        
+        int testResult = Integer.valueOf(testResultTextField.getText());
+        
+        if (testResult < 0 || testResult > 100) {
+
+            logs.append("Add test: Test is not added: Out of range[0-100]: " + testResult + "\n");
+            return;
+
+        }
+
         String testName = testNameTextField.getText();
         User selectedUser = testingCenter.findMe(selectedUserLabel.getText());
         
-        selectedUser.addTest(testName, testResult);
+        if (selectedUser.isTestAlreadyExists(testName)) {
+        
+            selectedUser.setTestResult(testName, testResult);
+            logs.append("Add test: Test is changed: " + testName + "\n");
+        
+        } else {
+        
+            selectedUser.addTest(testName, testResult);
+            logs.append("Add test: Test is added: " + testName + "\n");
+            
+        }
+        
         updateTestsTable();
         updateUsersTable();
-        logs.append("Add test: Test is added: " + testName + "\n");
         
     }//GEN-LAST:event_addTestButtonActionPerformed
 
     private void removeTestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeTestButtonActionPerformed
 
-        if (removeAllTestsCheckBox.isSelected()) {
-
-            for(int i = 1; i != testingCenter.getUsersCount() + 1; i++) {
-
-                if (testingCenter.findMe(i).removeTest(testNameTextField.getText()))
-                    logs.append("Remove test: Test is removed: " + testNameTextField.getText() + "\n");
-                else logs.append("Remove test: Test is not removed: " + testNameTextField.getText() + "\n");
-                
-            }
-
-        } else {
-
-            if (testingCenter.findMe(selectedUserLabel.getText()).removeTest(testNameTextField.getText()))
-                logs.append("Remove test: Test is removed: " + testNameTextField.getText() + "\n");
-            else logs.append("Remove test: Test is not removed: " + testNameTextField.getText() + "\n");
-
-        }
+        if (testingCenter.findMe(selectedUserLabel.getText()).removeTest())
+            logs.append("Remove test: Test is removed: " + "\n");
+        else logs.append("Remove test: Test is not removed: " + "\n");
 
         updateUsersTable();
         updateTestsTable();
@@ -661,41 +686,14 @@ public class TestingCenterGUI extends javax.swing.JFrame {
         
     }//GEN-LAST:event_loadFromFileButtonActionPerformed
 
-    private void changeTestResultButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeTestResultButtonActionPerformed
-        // TODO add your handling code here:
-        
-        int testResult = Integer.valueOf(newTestResultTextField.getText());
-        if (testResult < 0 || testResult > 100) {
-
-            logs.append("Change test result: Test is not changed: Out of range: " + testResult + "\n");
-            return;
-
-        }
-        
-        if (selectedUserLabel.getText().equals("<User is not selected>")) {
-
-            logs.append("Change test result: Test is not changed: User is not selected\n");
-            return;
-
-        }
-        
-        testingCenter.findMe(selectedUserLabel.getText()).setTestResult(testNameTextField.getText(), Integer.valueOf(newTestResultTextField.getText()));
-
-        DefaultTableModel testsTableModel = (DefaultTableModel)testsTable.getModel();
-
-        int i = 0;
-        while (!testsTableModel.getValueAt(i, 0).equals(testNameTextField.getText()))
-            i++;
-
-        logs.append("Change test result: Test is changed: " + 
-                testsTableModel.getValueAt(i, 1) + " -> " + testResult + "\n");
-
-        updateTestsTable();
-        updateUsersTable();
-        
-    }//GEN-LAST:event_changeTestResultButtonActionPerformed
-
     private void changeTestNameButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeTestNameButtonActionPerformed
+        
+        if (!isOnlyAlphabetic(newTestNameTextField.getText())) {
+        
+            JOptionPane.showMessageDialog(null, "Only letters is allowed");
+            return;
+            
+        }
         
         logs.append("Change test name: Test is changed: " + testNameTextField.getText() + " -> " + newTestNameTextField.getText() + "\n");
         testingCenter.findMe(selectedUserLabel.getText()).setTestName(testNameTextField.getText(), newTestNameTextField.getText());
@@ -712,9 +710,29 @@ public class TestingCenterGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_newTestNameTextFieldActionPerformed
 
     private void userNameTextFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_userNameTextFieldKeyPressed
+
+        char character = evt.getKeyChar();
+        
+        if(Character.isLetter(character) || Character.isWhitespace(character) || Character.isISOControl(character)) {
+            userNameTextField.setEditable(true);
+        } else {
+            userNameTextField.setEditable(false);
+        }
         
     }//GEN-LAST:event_userNameTextFieldKeyPressed
 
+    public boolean isOnlyAlphabetic(String string) {
+        if (string.matches("[а-яА-Яa-zA-Z ]+"))
+            return true;
+        return false;
+    }
+    
+    public boolean isOnlyNumeric(String string) {
+        if (string.matches("[0-9 ]+"))
+            return true;
+        return false;
+    }
+    
     /**
      * 
      * Выбор пользователя через таблицу пользователей левой кнопкой мыши
@@ -760,12 +778,107 @@ public class TestingCenterGUI extends javax.swing.JFrame {
 
     private void testsTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_testsTableMouseClicked
         // TODO add your handling code here:
-        
+        testNameTextField.setForeground(Color.BLACK);
         testNameTextField.setText((String)testsTable.getValueAt(testsTable.getSelectedRow(), 0));
         
-        updateTestsTable();
-        
     }//GEN-LAST:event_testsTableMouseClicked
+
+    private void testNameTextFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_testNameTextFieldKeyPressed
+
+        char character = evt.getKeyChar();
+        
+        if(Character.isLetter(character) || Character.isWhitespace(character) || Character.isISOControl(character)) {
+            testNameTextField.setEditable(true);
+        } else {
+            testNameTextField.setEditable(false);
+        }
+        
+    }//GEN-LAST:event_testNameTextFieldKeyPressed
+
+    private void testsTableInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_testsTableInputMethodTextChanged
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_testsTableInputMethodTextChanged
+
+    private void testResultTextFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_testResultTextFieldKeyPressed
+        
+        char character = evt.getKeyChar();
+        
+        if(Character.isDigit(character) || Character.isISOControl(character)) {
+            testResultTextField.setEditable(true);
+        } else {
+            testResultTextField.setEditable(false);
+        }
+        
+    }//GEN-LAST:event_testResultTextFieldKeyPressed
+
+    private void newTestNameTextFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_newTestNameTextFieldKeyPressed
+        
+        char character = evt.getKeyChar();
+        
+        if(Character.isLetter(character) || Character.isWhitespace(character) || Character.isISOControl(character)) {
+            newTestNameTextField.setEditable(true);
+        } else {
+            newTestNameTextField.setEditable(false);
+        }
+        
+    }//GEN-LAST:event_newTestNameTextFieldKeyPressed
+
+    private void testResultTextFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_testResultTextFieldFocusGained
+        if (testResultTextField.getText().equals("0-100")) {
+            testResultTextField.setText("");
+            testResultTextField.setForeground(Color.BLACK);
+        }
+    }//GEN-LAST:event_testResultTextFieldFocusGained
+
+    private void testResultTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_testResultTextFieldFocusLost
+        if (testResultTextField.getText().equals("")) {
+            testResultTextField.setText("0-100");
+            testResultTextField.setForeground(Color.GRAY);
+        }
+    }//GEN-LAST:event_testResultTextFieldFocusLost
+
+    private void userNameTextFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_userNameTextFieldFocusGained
+        if (userNameTextField.getText().equals("Only letters. Example: Иван, John, Sam...")) {
+            userNameTextField.setText("");
+            userNameTextField.setForeground(Color.BLACK);
+        }
+    }//GEN-LAST:event_userNameTextFieldFocusGained
+
+    private void userNameTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_userNameTextFieldFocusLost
+        if (userNameTextField.getText().equals("")) {
+            userNameTextField.setText("Only letters. Example: Иван, John, Sam...");
+            userNameTextField.setForeground(Color.GRAY);
+        }
+    }//GEN-LAST:event_userNameTextFieldFocusLost
+
+    private void testNameTextFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_testNameTextFieldFocusGained
+        if (testNameTextField.getText().equals("Only letters. Example: RU, Serious Test...")) {
+            testNameTextField.setText("");
+            testNameTextField.setForeground(Color.BLACK);
+        }
+    }//GEN-LAST:event_testNameTextFieldFocusGained
+
+    private void testNameTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_testNameTextFieldFocusLost
+        if (testNameTextField.getText().equals("")) {
+            testNameTextField.setText("Only letters. Example: RU, Serious Test...");
+            testNameTextField.setForeground(Color.GRAY);
+        }
+    }//GEN-LAST:event_testNameTextFieldFocusLost
+
+    private void newTestNameTextFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_newTestNameTextFieldFocusGained
+        if (newTestNameTextField.getText().equals("Only letters. Example: EN, Not So Serious Test...")) {
+            newTestNameTextField.setText("");
+            newTestNameTextField.setForeground(Color.BLACK);
+        }
+    }//GEN-LAST:event_newTestNameTextFieldFocusGained
+
+    private void newTestNameTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_newTestNameTextFieldFocusLost
+        if (newTestNameTextField.getText().equals("")) {
+            newTestNameTextField.setText("Only letters. Example: EN, Not So Serious Test...");
+            newTestNameTextField.setForeground(Color.GRAY);
+        }
+    }//GEN-LAST:event_newTestNameTextFieldFocusLost
     
     /**
      * @param args the command line arguments
@@ -821,21 +934,15 @@ public class TestingCenterGUI extends javax.swing.JFrame {
     private javax.swing.JButton addUserButton;
     private javax.swing.JButton changeTestNameButton;
     private javax.swing.JPanel changeTestNamePanel;
-    private javax.swing.JButton changeTestResultButton;
-    private javax.swing.JPanel changeTestResultPanel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JButton loadFromFileButton;
     private javax.swing.JTextArea logs;
     private javax.swing.JPanel menuPanel;
     private javax.swing.JLabel newNameLabel;
-    private javax.swing.JLabel newResultLabel;
     private javax.swing.JLabel newTestNameLabel;
     private javax.swing.JTextField newTestNameTextField;
-    private javax.swing.JTextField newTestResultTextField;
-    private javax.swing.JCheckBox removeAllTestsCheckBox;
     private javax.swing.JButton removeTestButton;
     private javax.swing.JButton removeUserButton;
     private javax.swing.JButton saveLogsToFileButton;
@@ -853,11 +960,11 @@ public class TestingCenterGUI extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 }
 
-class StringDocumentFilter extends DocumentFilter {
+class StringAndSymbolsDocumentFilter extends DocumentFilter {
 
     @Override
     public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-        string = string.replaceAll("[qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM]", "");
+        string = string.replaceAll("[qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM!@#$%^&*()_-+=]", "");
         super.insertString(fb, offset, string, attr);
     }
     
@@ -869,7 +976,7 @@ class StringDocumentFilter extends DocumentFilter {
 
 }
 
-class IntegerDocumentFilter extends DocumentFilter {
+class IntegerAndSymbolsDocumentFilter extends DocumentFilter {
 
     @Override
     public void insertString(DocumentFilter.FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
